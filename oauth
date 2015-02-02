@@ -2,9 +2,6 @@
 <head></head>
 <body>
 <script type="text/javascript">
-/*	var hash = location.hash.substring(location.hash.indexOf("access_token=") + 13);
-	hash = hash.substring(0, hash.indexOf("&"));
-	prompt("Copy this token", hash);*/
 	setTimeout(function() {
 		window.close();
 	}, 1000);
