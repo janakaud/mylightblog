@@ -1,42 +1,63 @@
+<!DOCTYPE html>
 <html>
-<meta charset="utf-8"/>
 <head>
-	<script type="text/javascript" src="jquery-1.6.4.js"></script>
+	<meta charset="utf-8"/>
 </head>
 <body>
-	<button onclick="authorize()">Authorize</button>
-	<button id="validate" onclick="validate()">Validate</button>
-	<button onclick="listBlogs()">Blogs</button>
-	<select id="blogs" onchange="listPosts()"></select>
-	<button onclick="listPosts(true)">All</button>
-	<button onclick="listPosts(false)">Draft</button>
-	<select id="posts"></select>
-	<button onclick="loadPost()">Load</button>
-	<button onclick="publish()">Publish</button>
-	<button onclick="unpublish()">Unpublish</button>
-	<button onclick="delPost()">Delete</button>
-	<div style="width:100%">
-		<div style="float:left;width:50%">
+	<table style="height:100%;width:100%;position:absolute;top:0;bottom:0;left:0;right:0">
+	<tbody>
+	<tr>
+		<td width="50%">
+			<button onclick="authorize(void)">Authorize</button>
+			<button onclick="listBlogs()">Blogs</button>
+			<select id="blogs"></select>
+		</td>
+		<td>
+			<button onclick="listPosts(true)">All</button>
+			<button onclick="listPosts(false)">Draft</button>
+			<select id="posts"></select>
+		</td>
+	</tr>
+	<tr>
+		<td>
 			<input id="title" style="width:100%"/>
-			<textarea id="input" style="width:100%;height:80%"></textarea>
+		</td>
+		<td>
+			<button onclick="loadPost()">Load</button>
+			<button onclick="publish()">Publish</button>
+			<button onclick="unpublish()">Unpublish</button>
+			<button onclick="delPost()">Delete</button>
+		</td>
+	</tr>
+	<tr style="height:100%">
+		<td>
+			<textarea id="input" style="width:100%;height:100%"></textarea>
+		</td>
+		<td>
+			<iframe id="preview" style="overflow:scroll;width:100%;height:100%"></iframe>
+		</td>
+	</tr>
+	<tr>
+		<td>
 			<input id="labels" style="width:100%"/>
-		</div>
-		<div style="float:left;width:50%">
-			<div id="preview" style="overflow-y:scroll;height:80%"/>
-		</div>
-	</div>
-	<button onclick="newPost()">New Post</button>
-	<button onclick="update()">Update</button>
+		</td>
+		<td>
+			<button onclick="newPost()">New Post</button>
+			<button onclick="update()">Update</button>
+		</td>
+	</tr>
+	</tbody>
+	</table>
 	<script type="text/javascript">
 		var acToken = localStorage.token;
 		var expiry = localStorage.expiry;
-		var oauthUrl = "https://accounts.google.com/o/oauth2/auth?";
-		var scope = "https://www.googleapis.com/auth/blogger";
-		var clientId = "149292588439-vmendckat24eusmct1buat1ino6hp9c9.apps.googleusercontent.com";
-		var redirect = "http://127.0.0.1/blogger/oauth"
-		var type = "token";
-		var _url = oauthUrl + "scope=" + scope + "&client_id=" + clientId + "&redirect_uri=" + redirect + "&response_type=" + type;
 		var dirty;
+		var blogs = $("blogs");
+		var posts = $("posts");
+		var title = $("title");
+		var input = $("input");
+		var labels = $("labels");
+		var preview = $("preview");
 
 		function expired() {
 			return !expiry || (new Date().getTime() - expiry >= 0);
@@ -45,7 +66,7 @@
 		function authorize(callback) {
 			if(!expired())
 				return callback();
-			var win = window.open(_url, "OAuthor", "width=500,height=200"); 
+			var win = window.open("https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/blogger&client_id=149292588439-vmendckat24eusmct1buat1ino6hp9c9.apps.googleusercontent.com&redirect_uri=http://127.0.0.1/blogger/oauth&response_type=token", "OAuthor", "width=500,height=200"); 
 			win.addEventListener("load", function(e) {
 				var win = e.target;
 				if (win.location.hash.indexOf("access_token") != -1) {
@@ -68,69 +89,58 @@
 			else
 				callback();
 		}
-
-		function validate() {
-			$.ajax({
-				type: "get",
-				url: "https://www.googleapis.com/oauth2/v1/tokeninfo",
-				data: {
-					"access_token": acToken
-				},
-				success: function(data) {
-					alert(JSON.stringify(data));
-				}
-			});
-		}
 		
 		function populate(list, data, textParam) {
-			list.empty();
-			$.each(data.items, function(i, d) {
-				list.append("<option value='" + d.id + "'>" + d[textParam] + "</option>");
-			});
+			list.innerHTML = "";
+			for(var i in data.items) {
+				list.innerHTML += "<option value='" + data.items[i].id + "'>" + data.items[i][textParam] + "</option>";
+			}
+		}
+		
+		function $(id) {
+			return document.getElementById(id);
 		}
 		
 		function ajax(method, url, data, success) {
 			callWithAuth(function() {
-				var req = {
-					type: method,
-					url: url,
-					beforeSend: function(xhr) {
-						xhr.withCredentials = true;
-						xhr.setRequestHeader("Authorization", "Bearer " + acToken);
-					},
-					success: success,
-					error: function(msg) {
-						alert(JSON.stringify(msg, undefined, 2));
-					}
+				alert(method + " " + url + " " + JSON.stringify(data));
+				var xhr = new XMLHttpRequest();
+				xhr.open(method, url, false);
+				xhr.setRequestHeader("Authorization", "Bearer " + acToken);
+				xhr.onload = function() {
+					success(JSON.parse(this.responseText));
+				};
+				xhr.onerror = function(msg) {
+					alert(JSON.stringify(msg, undefined, 2));
 				};
 				if(data) {
-					req.contentType = "application/json";
-					req.data = JSON.stringify(data);
+					xhr.setRequestHeader("Content-Type", "application/json");
+					xhr.send(JSON.stringify(data));
+				} else {
+					xhr.send(null);
 				}
-				alert(JSON.stringify(req));
-				$.ajax(req);
 			});
 		}
 		
 		function listPosts(all) {
-			ajax("get", "https://www.googleapis.com/blogger/v3/blogs/" + $("#blogs").val() + "/posts?status=draft" + (all ? "&status=live" : "") + "&fields=items(id,title)", null, function(data) {
-				populate($("#posts"), data, "title");
+			ajax("get", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts?status=draft" + (all ? "&status=live" : "") + "&fields=items(id,title)", null, function(data) {
+				populate(posts, data, "title");
 			});
 		}
 		
 		function listBlogs() {
 			ajax("get", "https://www.googleapis.com/blogger/v3/users/self/blogs?fields=items(id,name)", null, function(data) {
-				$("#posts").empty();
-				populate($("#blogs"), data, "name");
+				posts.innerHTML = "";
+				populate(blogs, data, "name");
 			});
 		}
 		
 		function loadPost() {
 			if(!dirty || confirm("Post has been modified. Are you sure you want to discard?")) {
-				ajax("get", "https://www.googleapis.com/blogger/v3/blogs/" + $("#blogs").val() + "/posts/" + $("#posts").val() + "?view=AUTHOR&fields=title,content,labels", null, function(data) {
-					$("#title").val(data.title);
-					$("#input").val(data.content);
-					$("#labels").val((data.labels || []).join(", "));
+				ajax("get", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts/" + posts.value + "?view=AUTHOR&fields=title,content,labels", null, function(data) {
+					title.value = data.title;
+					input.value = data.content;
+					labels.value = (data.labels || []).join(", ");
 					dirty = false;
 				});
 			}
@@ -138,17 +148,17 @@
 		
 		function submit(method, url) {
 			if(dirty) {
-				var labelTxt = $("#labels").val();
-				var labels = [];
+				var labelTxt = labels.value;
+				var labelList = [];
 				if(labelTxt.length > 0)
-					labels = labelTxt.split(/,\s*/g);
-				for(var i in labels) {
-					if(labels[i] == "") {
+					labelList = labelTxt.split(/,\s*/g);
+				for(var i in labelList) {
+					if(labelList[i] == "") {
 						alert("Invalid label");
 						return;
 					}
 				}
-				ajax(method, url, {"content": $("#input").val(), "title": $("#title").val(), "labels": labels}, function(data) {
+				ajax(method, url, {"content": input.value, "title": title.value, "labels": labelList}, function(data) {
 					alert("Success!");
 					dirty = false;
 				});
@@ -158,32 +168,33 @@
 		}
 		
 		function newPost() {
-			submit("post", "https://www.googleapis.com/blogger/v3/blogs/" + $("#blogs").val() + "/posts?isDraft=" + !(confirm("Publish the post now?")) + "&fields=");
+			submit("post", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts?isDraft=" + !(confirm("Publish the post now?")) + "&fields=");
 		}
 		
 		function update() {
-			submit("put", "https://www.googleapis.com/blogger/v3/blogs/" + $("#blogs").val() + "/posts/" + $("#posts").val() + "?fields=");
+			submit("put", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts/" + posts.value + "?fields=");
+		}
+		
+		function setPublished(publish) {
+			var choice = publish ? ["publish", "publish"] : ["unpublish", "revert"];
+			if(confirm("Are you sure you want to " + choice[0] + " this post?")) {
+				ajax("post", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts/" + posts.value + "/" + choice[1] + "?fields=", null, function(data) {
+					alert("Success!");
+				});
+			}
 		}
 		
 		function publish() {
-			if(confirm("Are you sure you want to publish this post?")) {
-				ajax("post", "https://www.googleapis.com/blogger/v3/blogs/" + $("#blogs").val() + "/posts/" + $("#posts").val() + "/publish?fields=", null, function(data) {
-					alert("Success!");
-				});
-			}
+			setPublished(true);
 		}
 		
 		function unpublish() {
-			if(confirm("Are you sure you want to unpublish this post?")) {
-				ajax("post", "https://www.googleapis.com/blogger/v3/blogs/" + $("#blogs").val() + "/posts/" + $("#posts").val() + "/revert?fields=", null, function(data) {
-					alert("Success!");
-				});
-			}
+			setPublished(false);
 		}
 
 		function delPost() {
 			if(confirm("Are you sure you want to delete this post?")) {
-				ajax("delete", "https://www.googleapis.com/blogger/v3/blogs/" + $("#blogs").val() + "/posts/" + $("#posts").val(), null, function(data) {
+				ajax("delete", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts/" + posts.value, null, function(data) {
 					alert("Success!");
 				});
 			}
@@ -191,13 +202,13 @@
 
 		function dirtify() {
 			dirty = true;
-			$("#preview").html($("#input").val());
+			preview.src = "data:text/html;charset=utf-8," + input.value;
 		}
 		
-		$("#labels").change(dirtify);
-		$("#input").change(dirtify);
-		$("#title").change(dirtify);
-		$("#input").keyup(dirtify);
+		labels.onchange = dirtify;
+		input.onchange = dirtify;
+		title.onchange = dirtify;
+		input.onkeyup = dirtify;
 	</script>
 </body>
 </html>
