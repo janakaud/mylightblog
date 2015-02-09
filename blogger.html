@@ -29,12 +29,12 @@
 			<button onclick="delPost()">Delete</button>
 		</td>
 	</tr>
-	<tr style="height:100%">
+	<tr style="height:300px;">
 		<td>
-			<textarea id="input" style="width:100%;height:100%"></textarea>
+			<textarea id="input" style="width:100%;height:298px;"></textarea>
 		</td>
 		<td>
-			<iframe id="preview" style="overflow:scroll;width:100%;height:100%"></iframe>
+			<div id="preview" style="overflow-y:auto; display:block; height: 298px;"></div>
 		</td>
 	</tr>
 	<tr>
@@ -202,7 +202,7 @@
 
 		function dirtify() {
 			dirty = true;
-			preview.src = "data:text/html;charset=utf-8," + input.value;
+			preview.innerHTML = input.value;
 		}
 		
 		labels.onchange = dirtify;
