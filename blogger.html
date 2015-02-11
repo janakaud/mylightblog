@@ -1,53 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html class="expand">
 <head>
 	<meta charset="utf-8"/>
+	<style type="text/css">
+		div div { width: 50%; float: left }
+		input, textarea { width: 98% }
+		input { height: 18px }
+		.scroll { overflow: auto }
+		.expand { height: 100% }
+		.control { height: 25px }
+		.textline { height: 18px }
+		.remainder { height: calc(100% - 55px) }
+	</style>
 </head>
-<body>
-	<table style="height:100%;width:100%;position:absolute;top:0;bottom:0;left:0;right:0">
-	<tbody>
-	<tr>
-		<td width="50%">
-			<button onclick="authorize(void)">Authorize</button>
+<body style="height: 100%; margin: 0px">
+	<div class="control">
+		<div>
+			<button onclick="authorize()">Authorize</button>
 			<button onclick="listBlogs()">Blogs</button>
-			<select id="blogs"></select>
-		</td>
-		<td>
+			<select id="blogs" class="control"></select>
+		</div>
+		<div>
 			<button onclick="listPosts(true)">All</button>
 			<button onclick="listPosts(false)">Draft</button>
-			<select id="posts"></select>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<input id="title" style="width:100%"/>
-		</td>
-		<td>
-			<button onclick="loadPost()">Load</button>
-			<button onclick="publish()">Publish</button>
-			<button onclick="unpublish()">Unpublish</button>
-			<button onclick="delPost()">Delete</button>
-		</td>
-	</tr>
-	<tr style="height:300px;">
-		<td>
-			<textarea id="input" style="width:100%;height:298px;"></textarea>
-		</td>
-		<td>
-			<div id="preview" style="overflow-y:auto; display:block; height: 298px;"></div>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<input id="labels" style="width:100%"/>
-		</td>
-		<td>
-			<button onclick="newPost()">New Post</button>
-			<button onclick="update()">Update</button>
-		</td>
-	</tr>
-	</tbody>
-	</table>
+			<select id="posts" class="control"></select>
+		</div>
+	</div>
+	<div class="control">
+		<button onclick="loadPost()">Load</button>
+		<button onclick="publish()">Publish</button>
+		<button onclick="unpublish()">Unpublish</button>
+		<button onclick="delPost()">Delete</button>
+		<button onclick="newPost()">New Post</button>
+		<button onclick="update()">Update</button>
+	</div>
+	<div class="remainder"">
+		<div class="expand">
+			<input id="title" class="textline"/>
+			<textarea id="input" class="remainder"></textarea>
+			<input id="labels" class="textline"/>
+		</div>
+		<div id="preview" class="expand scroll">
+		</div>
+	</div>
 	<script type="text/javascript">
 		var acToken = localStorage.token;
 		var expiry = localStorage.expiry;
@@ -202,13 +197,17 @@
 
 		function dirtify() {
 			dirty = true;
+			show();
+		}
+		
+		function show() {
 			preview.innerHTML = input.value;
 		}
 		
 		labels.onchange = dirtify;
 		input.onchange = dirtify;
 		title.onchange = dirtify;
-		input.onkeyup = dirtify;
+		input.onkeyup = show;
 	</script>
 </body>
 </html>
