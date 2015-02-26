@@ -47,12 +47,6 @@
 		var acToken = localStorage.token;
 		var expiry = localStorage.expiry;
 		var dirty;
-		var blogs = $("blogs");
-		var posts = $("posts");
-		var title = $("title");
-		var input = $("input");
-		var labels = $("labels");
-		var preview = $("preview");
 
 		function expired() {
 			return !expiry || (new Date().getTime() - expiry >= 0);
@@ -90,10 +84,6 @@
 			for(var i in data.items) {
 				list.innerHTML += "<option value='" + data.items[i].id + "'>" + data.items[i][textParam] + "</option>";
 			}
-		}
-		
-		function $(id) {
-			return document.getElementById(id);
 		}
 		
 		function ajax(method, url, data, success) {
@@ -204,9 +194,7 @@
 			preview.innerHTML = input.value;
 		}
 		
-		labels.onchange = dirtify;
-		input.onchange = dirtify;
-		title.onchange = dirtify;
+		labels.onchange = input.onchange = title.onchange = dirtify;
 		input.onkeyup = show;
 	</script>
 </body>
