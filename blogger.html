@@ -16,7 +16,7 @@
 <body style="height: 100%; margin: 0px">
 	<div class="control">
 		<div>
-			<button onclick="authorize()">Authorize</button>
+			<button onclick="authorize(function(){alert('Completed');})">Authorize</button>
 			<button onclick="listBlogs()">Blogs</button>
 			<select id="blogs" class="control"></select>
 		</div>
@@ -34,7 +34,7 @@
 		<button onclick="newPost()">New Post</button>
 		<button onclick="update()">Update</button>
 	</div>
-	<div class="remainder"">
+	<div class="remainder">
 		<div class="expand">
 			<input id="title" class="textline"/>
 			<textarea id="input" class="remainder"></textarea>
@@ -44,32 +44,17 @@
 		</div>
 	</div>
 	<script type="text/javascript">
-		var acToken = localStorage.token;
-		var expiry = localStorage.expiry;
 		var dirty;
 
 		function expired() {
-			return !expiry || (new Date().getTime() - expiry >= 0);
+			return !localStorage.expiry || (new Date().getTime() - localStorage.expiry >= 0);
 		}
 		
 		function authorize(callback) {
 			if(!expired())
 				return callback();
-			var win = window.open("https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/blogger&client_id=149292588439-vmendckat24eusmct1buat1ino6hp9c9.apps.googleusercontent.com&redirect_uri=http://127.0.0.1/blogger/oauth&response_type=token", "OAuthor", "width=500,height=200"); 
-			win.addEventListener("load", function(e) {
-				var win = e.target;
-				if (win.location.hash.indexOf("access_token") != -1) {
-					var hash = win.location.hash;
-					hash = hash.substring(hash.indexOf("access_token=") + 13);
-					acToken = hash.substring(0, hash.indexOf("&"));
-					localStorage.token = acToken;
-					hash = hash.substring(hash.indexOf("expires_in=") + 11);
-					expiry = new Date().getTime() + parseInt(hash)*1000;
-					localStorage.expiry = expiry;
-					callback();
-				} else
-					alert("Authorization failed");
-			}, true);
+			this.callback = callback;
+			window.open("https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/blogger&client_id=149292588439-vmendckat24eusmct1buat1ino6hp9c9.apps.googleusercontent.com&redirect_uri=http://127.0.0.1/blogger/oauth&response_type=token", "OAuthor", "width=500,height=200"); 
 		}
 		
 		function callWithAuth(callback) {
@@ -91,7 +76,7 @@
 				alert(method + " " + url + " " + JSON.stringify(data));
 				var xhr = new XMLHttpRequest();
 				xhr.open(method, url, false);
-				xhr.setRequestHeader("Authorization", "Bearer " + acToken);
+				xhr.setRequestHeader("Authorization", "Bearer " + localStorage.token);
 				xhr.onload = function() {
 					success(JSON.parse(this.responseText));
 				};
@@ -99,7 +84,6 @@
 					alert(JSON.stringify(msg, undefined, 2));
 				};
 				if(data) {
-					xhr.setRequestHeader("Content-Type", "application/json");
 					xhr.send(JSON.stringify(data));
 				} else {
 					xhr.send(null);

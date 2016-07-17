@@ -1,10 +1,22 @@
+<!DOCTYPE html>
 <html>
-<head></head>
+<head>
+	<meta charset="utf-8"/>
+</head>
 <body>
 <script type="text/javascript">
-	setTimeout(function() {
-		window.close();
-	}, 1000);
+	if (location.hash.indexOf("access_token") != -1) {
+		var hash = location.hash;
+		hash = hash.substring(hash.indexOf("access_token=") + 13);
+		acToken = hash.substring(0, hash.indexOf("&"));
+		localStorage.token = acToken;
+		hash = hash.substring(hash.indexOf("expires_in=") + 11);
+		expiry = new Date().getTime() + parseInt(hash)*1000;
+		localStorage.expiry = expiry;
+		window.opener.callback();
+	} else
+		alert("Authorization failed");
+	close();
 </script>
 </body>
 </html>
