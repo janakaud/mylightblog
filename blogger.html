@@ -54,7 +54,7 @@
 			if(!expired())
 				return callback();
 			this.callback = callback;
-			window.open("https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/blogger&client_id=149292588439-vmendckat24eusmct1buat1ino6hp9c9.apps.googleusercontent.com&redirect_uri=http://127.0.0.1/blogger/oauth&response_type=token", "OAuthor", "width=500,height=200"); 
+			window.open("https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/blogger&client_id=149292588439-vmendckat24eusmct1buat1ino6hp9c9.apps.googleusercontent.com&redirect_uri=http://127.0.0.1/blogger/oauth.html&response_type=token", "OAuthor", "width=500,height=200"); 
 		}
 		
 		function callWithAuth(callback) {
@@ -84,6 +84,7 @@
 					alert(JSON.stringify(msg, undefined, 2));
 				};
 				if(data) {
+					xhr.setRequestHeader("Content-Type", "application/json");
 					xhr.send(JSON.stringify(data));
 				} else {
 					xhr.send(null);
