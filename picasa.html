@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Picasa</title>
+</head>
+<body style="height: 100%; margin: 0px">
+	<div>
+		<button onclick="authorize(function(){alert('Completed');})">Authorize</button>
+		<button onclick="listAlbums()">Albums</button>
+		<select id="albums"></select>
+		<button onclick="listPix()">Pix</button>
+		<input id="withurls" type="checkbox">Fetch URLs</input>
+		<select id="pix"></select>
+		<button onclick="delPix()">Delete</button>
+		<input id="picker" type="file"/>
+		<button onclick="upload()">Upload</button>
+	</div>
+	<label id="output"/>
+	<script src="util.js"></script>
+	<script src="picasa.js"></script>
+</body>
+</html>

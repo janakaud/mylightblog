@@ -2,16 +2,8 @@
 <html class="expand">
 <head>
 	<meta charset="utf-8"/>
-	<style type="text/css">
-		div div { width: 50%; float: left }
-		input, textarea { width: 98% }
-		input { height: 18px }
-		.scroll { overflow: auto }
-		.expand { height: 100% }
-		.control { height: 25px }
-		.textline { height: 18px }
-		.remainder { height: calc(100% - 55px) }
-	</style>
+	<title>Blogger</title>
+	<link rel="stylesheet" href="style.css"/>
 </head>
 <body style="height: 100%; margin: 0px">
 	<div class="control">
@@ -38,149 +30,12 @@
 		<div class="expand">
 			<input id="title" class="textline"/>
 			<textarea id="input" class="remainder"></textarea>
-			<input id="labels" class="textline"/>
+			<input id="labels" class="textline" maxlength="200"/>
 		</div>
 		<div id="preview" class="expand scroll">
 		</div>
 	</div>
-	<script type="text/javascript">
-		var dirty;
-
-		function expired() {
-			return !localStorage.expiry || (new Date().getTime() - localStorage.expiry >= 0);
-		}
-		
-		function authorize(callback) {
-			if(!expired())
-				return callback();
-			this.callback = callback;
-			window.open("https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/blogger&client_id=149292588439-vmendckat24eusmct1buat1ino6hp9c9.apps.googleusercontent.com&redirect_uri=http://127.0.0.1/blogger/oauth.html&response_type=token", "OAuthor", "width=500,height=200"); 
-		}
-		
-		function callWithAuth(callback) {
-			if(expired())
-				authorize(callback);
-			else
-				callback();
-		}
-		
-		function populate(list, data, textParam) {
-			list.innerHTML = "";
-			for(var i in data.items) {
-				list.innerHTML += "<option value='" + data.items[i].id + "'>" + data.items[i][textParam] + "</option>";
-			}
-		}
-		
-		function ajax(method, url, data, success) {
-			callWithAuth(function() {
-				alert(method + " " + url + " " + JSON.stringify(data));
-				var xhr = new XMLHttpRequest();
-				xhr.open(method, url, false);
-				xhr.setRequestHeader("Authorization", "Bearer " + localStorage.token);
-				xhr.onload = function() {
-					success(JSON.parse(this.responseText));
-				};
-				xhr.onerror = function(msg) {
-					alert(JSON.stringify(msg, undefined, 2));
-				};
-				if(data) {
-					xhr.setRequestHeader("Content-Type", "application/json");
-					xhr.send(JSON.stringify(data));
-				} else {
-					xhr.send(null);
-				}
-			});
-		}
-		
-		function listPosts(all) {
-			ajax("get", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts?status=draft" + (all ? "&status=live" : "") + "&fields=items(id,title)", null, function(data) {
-				populate(posts, data, "title");
-			});
-		}
-		
-		function listBlogs() {
-			ajax("get", "https://www.googleapis.com/blogger/v3/users/self/blogs?fields=items(id,name)", null, function(data) {
-				posts.innerHTML = "";
-				populate(blogs, data, "name");
-			});
-		}
-		
-		function loadPost() {
-			if(!dirty || confirm("Post has been modified. Are you sure you want to discard?")) {
-				ajax("get", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts/" + posts.value + "?view=AUTHOR&fields=title,content,labels", null, function(data) {
-					title.value = data.title;
-					input.value = data.content;
-					labels.value = (data.labels || []).join(", ");
-					dirty = false;
-				});
-			}
-		}
-		
-		function submit(method, url) {
-			if(dirty) {
-				var labelTxt = labels.value;
-				var labelList = [];
-				if(labelTxt.length > 0)
-					labelList = labelTxt.split(/,\s*/g);
-				for(var i in labelList) {
-					if(labelList[i] == "") {
-						alert("Invalid label");
-						return;
-					}
-				}
-				ajax(method, url, {"content": input.value, "title": title.value, "labels": labelList}, function(data) {
-					alert("Success!");
-					dirty = false;
-				});
-			} else {
-				alert("Nothing to save!");
-			}
-		}
-		
-		function newPost() {
-			submit("post", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts?isDraft=" + !(confirm("Publish the post now?")) + "&fields=");
-		}
-		
-		function update() {
-			submit("put", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts/" + posts.value + "?fields=");
-		}
-		
-		function setPublished(publish) {
-			var choice = publish ? ["publish", "publish"] : ["unpublish", "revert"];
-			if(confirm("Are you sure you want to " + choice[0] + " this post?")) {
-				ajax("post", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts/" + posts.value + "/" + choice[1] + "?fields=", null, function(data) {
-					alert("Success!");
-				});
-			}
-		}
-		
-		function publish() {
-			setPublished(true);
-		}
-		
-		function unpublish() {
-			setPublished(false);
-		}
-
-		function delPost() {
-			if(confirm("Are you sure you want to delete this post?")) {
-				ajax("delete", "https://www.googleapis.com/blogger/v3/blogs/" + blogs.value + "/posts/" + posts.value, null, function(data) {
-					alert("Success!");
-				});
-			}
-		}
-
-		function dirtify() {
-			dirty = true;
-			show();
-		}
-		
-		function show() {
-			preview.innerHTML = input.value;
-		}
-		
-		labels.onchange = input.onchange = title.onchange = dirtify;
-		input.onkeyup = show;
-	</script>
+	<script src="util.js"></script>
+	<script src="blogger.js"></script>
 </body>
 </html>

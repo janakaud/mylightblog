@@ -1,0 +1,8 @@
+div div { width: 50%; float: left }
+input, textarea { width: 98% }
+input { height: 18px }
+.scroll { overflow: auto }
+.expand { height: 100% }
+.control { height: 25px }
+.textline { height: 18px }
+.remainder { height: calc(100% - 55px) }
