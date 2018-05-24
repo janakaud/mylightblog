@@ -12,7 +12,7 @@ function listPix() {
 	picax("get", url(ALBUM_URL + albums.value, "?fields=entry(title," +
 	(withurls.checked ? "content" : "gphoto:id") + ")"), null, function(data) {
 		populate(pix, mapAtom(data, function(item) {
-			return item.content.src.value;
+			return withurls.checked ? item.content.src.value : item.id;
 		}), "title");
 		var list = pix.options;
 		for (var i = 0; i < list.length; i++) {
