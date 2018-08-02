@@ -31,35 +31,27 @@ function listAlbums() {
 }
 
 function upload() {
-	file = picker.files[0];
-	if (!file) {
-		alert("Please select a file for uploading");
-		return;
+	output.innerHTML = "";
+	for (var cnt = 0; cnt < picker.files.length; cnt++) {
+		var file = picker.files[cnt];
+		var reader = new FileReader();
+		reader.onload = function (e) {
+			picax("POST", ALBUM_URL + albums.value, e.target.result, function(data) {
+				var url = data.entry.content.src.value;
+				output.innerHTML += '<br/><a href="' + url + '">' + url + '</a>';
+			}, e.target._type, {Slug: e.target._name});
+		};
+		reader._name = file.name;
+		reader._type = file.type;
+		reader.readAsArrayBuffer(file);
 	}
-
-	var reader = new FileReader();
-	reader.onload = function (e) {
-		picax("POST", ALBUM_URL + albums.value, e.target.result, function(data) {
-			var url = data.entry.content.src.value;
-			output.innerHTML = '<a href="' + url + '">' + url + '</a>';
-		}, file.type, {Slug: file.name});
-	};
-	reader.readAsArrayBuffer(file);
-}
-
-function delPix() {
-	if (!pix.value || !confirm("Deleting " + pix.selectedOptions[0].text + ", are you sure?")) {
-		return;
-	}
-	picax("delete", ALBUM_URL + albums.value + "/photoid/" + pix.value, null, function(data) {
-		alert(data);
-	});
+	picker.value = "";
 }
 
 function picax(method, url, data, success, type, headers) {
 	var headerMap = headers || {};
 	headerMap.Base = url;
-	ajax(method, "http://kotrivia.appspot.com?", headerMap, data, success, type);
+	ajax(method, "http://kotrivia.appspot.com", headerMap, data, success, type);
 }
 
 function mapAtom(data, idResolver = function(item) { return item.id; }) {
