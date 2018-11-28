@@ -12,6 +12,12 @@ function listPosts(all) {
 	});
 }
 
+function searchPosts() {
+	blog("get", BLOG_URL + blogs.value + "/posts/search?q=" + search.value + "&fields=items(id,title)", null, function(data) {
+		populate(posts, data.items, "title");
+	});
+}
+
 function listBlogs() {
 	blog("get", BASE_URL + "users/self/blogs?fields=items(id,name)", null, function(data) {
 		posts.innerHTML = "";
